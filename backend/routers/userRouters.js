@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const expressAsyncHandler = require('express-async-handler');
 const { User, Account } = require('../models');
+const models = require('../models');
 const { generateToken, isAuth } = require('../middleware/auth');
 const otpGenerator = require('otp-generator');
 const { sendMail } = require('../services/mail');
@@ -99,6 +100,13 @@ userRouter.post(
     res.send({
       message: 'User verified',
       token: generateToken(user),
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      isAdmin: user.isAdmin,
+      active: user.active,
     });
   })
 );
@@ -155,6 +163,11 @@ userRouter.post(
         message: 'Invalid email or password',
       });
     }
+    const account = await Account.findOne({
+      where: {
+        userId: user.id,
+      },
+    });
 
     res.send({
       id: user.id,
@@ -164,6 +177,7 @@ userRouter.post(
       lastName: user.lastName,
       isAdmin: user.isAdmin,
       active: user.active,
+      balance: account.balance,
       token: generateToken(user),
     });
   })
@@ -195,14 +209,21 @@ userRouter.post(
 );
 
 userRouter.get(
-  '/',
+  '/username',
+  isAuth,
 
   expressAsyncHandler(async (req, res) => {
     const user = await User.findOne({
       where: {
-        email: req.body.email,
+        username: req.user.username,
       },
     });
+    const account = await Account.findOne({
+      where: {
+        userId: user.id,
+      },
+    });
+
     res.send({
       id: user.id,
       username: user.username,
@@ -211,8 +232,27 @@ userRouter.get(
       lastName: user.lastName,
       isAdmin: user.isAdmin,
       active: user.active,
-      balance: user.balance,
+      balance: account.balance,
     });
+  })
+);
+
+userRouter.get(
+  '/balance',
+  isAuth,
+  expressAsyncHandler(async (req, res) => {
+    const user = await User.findOne({
+      where: {
+        username: req.user.username,
+      },
+    });
+    const account = await Account.findOne({
+      where: {
+        userId: user.id,
+      },
+    });
+
+    res.send(account.balance);
   })
 );
 

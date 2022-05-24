@@ -12,7 +12,7 @@ module.exports.generateToken = (user) => {
     },
     '' + process.env.JWT_SECRET,
     {
-      expiresIn: '5m',
+      expiresIn: '10d',
     }
   );
 };

@@ -62,7 +62,7 @@ async function chargeCard({
             amount,
             tag,
             accountId: user.id,
-            purpose: 'Payment',
+            purpose: 'card',
             externalReference: validateCharge.data.flw_ref,
             metadata: {
               tx_ref: validateCharge.data.tx_ref,
@@ -180,12 +180,12 @@ async function chargeBank({ tag, amount, bankCode, accountNumber }) {
   }
 }
 
-chargeBank({
-  tag: 'fola',
-  amount: 100,
-  bankCode: '044',
-  accountNumber: '0690000031',
-});
+// chargeBank({
+//   tag: 'fola',
+//   amount: 100,
+//   bankCode: '044',
+//   accountNumber: '0690000031',
+// });
 
 async function withdraw({ tag, amount, bankCode, accountNumber, narration }) {
   try {
@@ -278,5 +278,4 @@ module.exports = {
   createAccount,
   chargeBank,
   withdraw,
-  getBanks,
 };

@@ -13,6 +13,12 @@ import {
   USER_SETPIN_REQUEST,
   USER_SETPIN_SUCCESS,
   USER_SETPIN_FAIL,
+  USER_DETAILS_REQUEST,
+  USER_DETAILS_SUCCESS,
+  USER_DETAILS_FAIL,
+  USER_BALANCE_REQUEST,
+  USER_BALANCE_SUCCESS,
+  USER_BALANCE_FAIL,
 } from '../constants/userConstants';
 
 export const signup =
@@ -36,6 +42,11 @@ export const signup =
         type: USER_SIGNUP_SUCCESS,
         payload: data,
       });
+      dispatch({
+        type: USER_SIGNIN_SUCCESS,
+        payload: data,
+      });
+
       localStorage.setItem('userInfo', JSON.stringify(data));
     } catch (error) {
       dispatch({
@@ -131,10 +142,67 @@ export const Pin = (pin) => async (dispatch, getState) => {
   }
 };
 
+export const details = (username) => async (dispatch, getState) => {
+  dispatch({
+    type: USER_DETAILS_REQUEST,
+    payload: username,
+  });
+  const {
+    userSignin: { userInfo },
+  } = getState();
+  try {
+    const { data } = await Axios.get(`/api/users/${username}`, {
+      headers: {
+        Authorization: `Bearer ${userInfo.token}`,
+      },
+    });
+    dispatch({
+      type: USER_DETAILS_SUCCESS,
+      payload: data,
+    });
+  } catch (error) {
+    dispatch({
+      type: USER_DETAILS_FAIL,
+      payload:
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message,
+    });
+  }
+};
+
 export const signout = () => (dispatch) => {
   localStorage.removeItem('userInfo');
   dispatch({
     type: USER_SIGNOUT,
   });
   document.location.href = '/signin';
+};
+
+export const getBalance = () => async (dispatch, getState) => {
+  dispatch({
+    type: USER_BALANCE_REQUEST,
+  });
+  const {
+    userSignin: { userInfo },
+  } = getState();
+  try {
+    const { data } = await Axios.get('/api/users/balance', {
+      headers: {
+        Authorization: `Bearer ${userInfo.token}`,
+      },
+    });
+    dispatch({
+      type: USER_BALANCE_SUCCESS,
+      payload: data,
+    });
+  } catch (error) {
+    dispatch({
+      type: USER_BALANCE_FAIL,
+      payload:
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message,
+    });
+  }
 };

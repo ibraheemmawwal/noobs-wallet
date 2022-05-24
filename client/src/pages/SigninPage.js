@@ -11,7 +11,7 @@ export default function SigninPage(props) {
   const dispatch = useDispatch();
   const { search } = useLocation();
   const redirectInUrl = new URLSearchParams(search).get('redirect');
-  // const redirect = redirectInUrl ? redirectInUrl : '/dashboard';
+  const redirect = redirectInUrl ? redirectInUrl : '/dashboard';
   const redirect2 = redirectInUrl ? redirectInUrl : '/signup/verify';
 
   const userSignin = useSelector((state) => state.userSignin);
@@ -22,13 +22,11 @@ export default function SigninPage(props) {
     dispatch(signin(email, password));
   };
   useEffect(() => {
-    // if (!userInfo.active) {
-    //   navigate(redirect2);
-    // }
     if (userInfo) {
-      navigate(redirect2);
+      navigate(redirect);
     }
-  }, [userInfo, navigate, redirect2]);
+  }, [userInfo, navigate, redirect2, redirect]);
+  console.log(userInfo);
 
   return (
     <div>

@@ -10,21 +10,15 @@ const transactionRouter = express.Router();
 
 transactionRouter.post(
   '/transfer',
-  // isAuth,
+  isAuth,
+
   async (req, res) => {
-    const { sender_tag, recipient_tag, amount } = req.body;
-    const sender = await models.User.findOne({
-      where: { username: sender_tag },
+    const user = await models.User.findOne({
+      where: { username: req.user.username },
     });
-    const recipient = await models.User.findOne({
-      where: { username: recipient_tag },
+    const receipient = await models.User.findOne({
+      where: { username: req.body.receipient },
     });
-    if (!sender || !recipient) {
-      return res.status(400).json({
-        success: false,
-        error: 'User does not exist',
-      });
-    }
 
     const t = await models.sequelize.transaction();
 
@@ -32,49 +26,103 @@ transactionRouter.post(
       const reference = v4();
       const purpose = 'transfer';
 
-      const transferResult = await Promise.all([
-        await debitAccount({
-          amount,
-          accountId: sender.id,
-          purpose,
-          reference,
-          metadata: {
-            recipient_id,
-          },
-        }),
-        await creditAccount({
-          amount,
-          accountId: recipient.id,
-          purpose,
-          reference,
-          metadata: {
-            sender_id,
-          },
-        }),
-      ]);
-
-      const failedTxns = transferResult.filter((result) => !result.success);
-      if (failedTxns.length) {
-        await t.rollback();
-        res.send(transferResult);
-      }
-      console.log('transferResult', transferResult);
-
-      await t.commit();
-      res.status(200).send({
-        success: true,
-        message: 'Transfer successful',
+      const debitResult = await debitAccount({
+        amount: req.body.amount,
+        accountId: user.id,
+        purpose,
+        reference,
+        metadata: {
+          reciever: receipient.id,
+        },
       });
+
+      if (!debitResult.success) {
+        await t.rollback();
+        console.log(debitResult);
+
+        return res.status(400).send({
+          success: false,
+          error: debitResult.error,
+        });
+      } else {
+        const creditResult = await creditAccount({
+          amount: req.body.amount,
+          accountId: receipient.id,
+          purpose,
+          reference,
+          metadata: {
+            sender: user.id,
+          },
+        });
+
+        if (!creditResult.success) {
+          res.send(creditResult);
+          await t.rollback();
+          console.log(creditResult);
+        } else {
+          await t.commit();
+          res.send({
+            success: true,
+            message: 'Transfer successful',
+          });
+        }
+      }
     } catch (error) {
-      console.log(error);
       await t.rollback();
-      // await t.commit();
-      res.status(500).send({
+      res.send({
         success: false,
-        message: 'Transfer failed',
+        error: error.message,
       });
     }
   }
+);
+
+transactionRouter.post(
+  '/charge',
+  expressAsyncHandler(async (req, res) => {
+    chargeCard({
+      amount: req.body.amount,
+
+      tag: req.body.tag,
+      pan: req.body.pan,
+      expiry_month: req.body.expiry_month,
+      expiry_year: req.body.expiry_year,
+      cvv: req.body.cvv,
+      otp: req.body.otp,
+      pin: req.body.pin,
+    })
+      .then((result) => {
+        res.status(200).send(result);
+      })
+      .catch((error) => {
+        res.status(500).send(error);
+      });
+  })
+);
+
+transactionRouter.get(
+  '/mine',
+  isAuth,
+  expressAsyncHandler(async (req, res) => {
+    const transactions = await models.Transaction.findAll({
+      where: { AccountId: req.user.id },
+      order: [['createdAt', 'DESC']],
+    });
+    res.send(transactions);
+  })
+);
+
+transactionRouter.get(
+  '/:id',
+  isAuth,
+
+  expressAsyncHandler(async (req, res) => {
+    const transaction = await models.Transaction.findOne({
+      where: { id: req.params.id },
+    });
+
+    res.send(transaction);
+  })
 );
 
 module.exports = transactionRouter;

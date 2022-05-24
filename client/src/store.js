@@ -6,7 +6,14 @@ import {
   signinReducer,
   verifyReducer,
   pinReducer,
+  detailsReducer,
+  balanceReducer,
 } from './reducers/userReducer';
+import {
+  transactionListReducer,
+  transactionDetailsReducer,
+  transactionTransferReducer,
+} from './reducers/transactionReducer';
 
 const initialState = {
   userSignin: {
@@ -21,6 +28,11 @@ const reducers = combineReducers({
   userSignin: signinReducer,
   userVerify: verifyReducer,
   userSetPin: pinReducer,
+  userDetails: detailsReducer,
+  userBalance: balanceReducer,
+  transactionList: transactionListReducer,
+  transactionDetails: transactionDetailsReducer,
+  transactionTransfer: transactionTransferReducer,
 });
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;

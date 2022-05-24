@@ -7,6 +7,7 @@ import VerifyPage from './pages/VerifyPage';
 import HomePage from './pages/HomePage';
 import SetpinPage from './pages/SetpinPage';
 import Dashboard from './pages/Dashboard';
+import Transfer from './pages/Transfer';
 
 import './App.css';
 
@@ -20,6 +21,7 @@ const App = () => {
           <Route path="/signup/verify" element={<VerifyPage />} />
           <Route path="/signup/setpin" element={<SetpinPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/transfer" element={<Transfer />} />
           <Route path="/" element={<HomePage />} />
         </Routes>
       </Router>
