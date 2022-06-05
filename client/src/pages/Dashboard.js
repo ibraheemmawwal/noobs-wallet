@@ -3,7 +3,7 @@ import Modal from 'react-modal';
 
 import { useDispatch, useSelector } from 'react-redux';
 // import { useParams } from 'react-router-dom';
-import { signout, details, getBalance } from '../actions/userActions';
+import { signout, getBalance } from '../actions/userActions';
 import {
   transactionListMine,
   detailsTransaction,
@@ -23,7 +23,7 @@ export default function Dashboard(props) {
   const { balance } = userBalance;
 
   const transactionDetails = useSelector((state) => state.transactionDetails);
-  const { details, load, err } = transactionDetails;
+  const { details, success, load, err } = transactionDetails;
 
   const transactionList = useSelector((state) => state.transactionList);
   const { transactions, loading, error } = transactionList;
@@ -33,7 +33,8 @@ export default function Dashboard(props) {
     dispatch(getBalance());
   }, [dispatch]);
 
-  const handleOpen = () => {
+  const handleOpen = (id) => {
+    dispatch(detailsTransaction(id));
     setOpen(true);
   };
   const handleClose = () => setOpen(false);
@@ -41,7 +42,7 @@ export default function Dashboard(props) {
   const signoutHandler = () => {
     dispatch(signout());
   };
-
+  console.log(details);
   return (
     <>
       <div>
@@ -83,9 +84,7 @@ export default function Dashboard(props) {
                       <button
                         id={transaction.id}
                         onClick={(e) => {
-                          dispatch(detailsTransaction(e.target.id));
-
-                          handleOpen();
+                          handleOpen(e.target.id);
                         }}
                       >
                         Details
@@ -108,20 +107,21 @@ export default function Dashboard(props) {
           contentLabel="Example Modal"
         >
           <button onClick={handleClose}>close</button>
-          {/* <h2>Transaction Details</h2>
-
-          <p>
-            <strong>Amount: </strong>
-          </p>
-          <p>
-            <strong>txnType: </strong>
-          </p>
-          <p>
-            <strong>purpose: </strong>
-          </p>
-          <p>
-            <strong>time: </strong>
-          </p> */}
+          <h2>Transaction Details</h2>
+          {load ? (
+            <p>Loading...</p>
+          ) : err ? (
+            <p>{err}</p>
+          ) : (
+            <>
+              <p>Amount: {details?.amount}</p>
+              <p>Balance After: {details?.balanceAfter}</p>
+              <p>Balance Before: {details?.balanceBefore}</p>
+              <p>Date Created: {details?.createdAt}</p>
+              <p>Transaction Type: {details?.txnType}</p>
+              <p>{details?.transactionAmount}</p>
+            </>
+          )}
         </Modal>
       </div>
 

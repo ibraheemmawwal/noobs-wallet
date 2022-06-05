@@ -5,6 +5,7 @@ import {
   TRANSACTION_DETAILS_REQUEST,
   TRANSACTION_DETAILS_SUCCESS,
   TRANSACTION_DETAILS_FAIL,
+  TRANSACTION_DETAILS_CLEAR,
   TRANSACTION_TRANSFER_REQUEST,
   TRANSACTION_TRANSFER_SUCCESS,
   TRANSACTION_TRANSFER_FAIL,
@@ -32,9 +33,12 @@ export const transactionDetailsReducer = (state = {}, action) => {
     case TRANSACTION_DETAILS_REQUEST:
       return { loading: true };
     case TRANSACTION_DETAILS_SUCCESS:
-      return { loading: false, details: action.payload };
+      return { loading: false, success: true, details: action.payload };
     case TRANSACTION_DETAILS_FAIL:
       return { loading: false, error: action.payload };
+    case TRANSACTION_DETAILS_CLEAR:
+      return {};
+
     default:
       return state;
   }
